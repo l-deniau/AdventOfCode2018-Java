@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
 
-public class App {
+public class Day1 {
 
     public static void main(String[] args) {
-        File input = new File(Objects.requireNonNull(App.class.getClassLoader()
+        File input = new File(Objects.requireNonNull(Day1.class.getClassLoader()
                 .getResource("input.txt")).getFile());
 
         System.out.println("--- Day 1: Chronal Calibration ---");

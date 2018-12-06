@@ -26,4 +26,4 @@ dependencies {
 }
 
 // Define the main class for the application
-mainClassName = 'Day1'
+mainClassName = 'Day2'
