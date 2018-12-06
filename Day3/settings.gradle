@@ -7,5 +7,4 @@
  * in the user guide at https://docs.gradle.org/5.0/userguide/multi_project_builds.html
  */
 
-rootProject.name = 'AdventOfCode2018-Java'
-include 'Day1', 'Day2', 'Day3'
+rootProject.name = 'Day3'
