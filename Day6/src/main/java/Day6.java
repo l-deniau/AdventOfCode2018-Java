@@ -44,6 +44,7 @@ public class Day6 {
                 "Part Two - the size of the region containing all locations which have a total " +
                         "distance to all given coordinates of less than 10000 :"
         );
+        System.out.println(get10000OrLessRegionSize(coordinateList));
     }
 
     private static int getLargestAreaSize(List<Coordinate> coordinateList) {
@@ -122,6 +123,52 @@ public class Day6 {
         if (closestManhattananDistanceCoord.size() == 1) {
             return closestManhattananDistanceCoord.get(0).getOwnerId();
         } else return 0;
+    }
+
+    private static int get10000OrLessRegionSize(List<Coordinate> coordinateList) {
+        int minX = coordinateList.stream().min(Comparator.comparing(Coordinate::getX))
+                .orElse(new Coordinate(0,0,0)).getX()-1;
+        int minY = coordinateList.stream().min(Comparator.comparing(Coordinate::getY))
+                .orElse(new Coordinate(0,0,0)).getY()-1;
+
+        // Reduce coordinate near 0 for better performance
+        coordinateList.forEach(coordinate -> {
+            coordinate.setX(coordinate.getX() - minX);
+            coordinate.setY(coordinate.getY() - minY);
+        });
+
+        int maxX = coordinateList.stream().max(Comparator.comparing(Coordinate::getX))
+                .orElse(new Coordinate(0,0,0)).getX()+1;
+        int maxY = coordinateList.stream().max(Comparator.comparing(Coordinate::getY))
+                .orElse(new Coordinate(0,0,0)).getY()+1;
+
+        Integer[][] coordinates = new Integer[maxX][maxY];
+
+        for (Coordinate coordinate : coordinateList) {
+            coordinates[coordinate.getX()][coordinate.getY()] = coordinate.getOwnerId();
+        }
+
+        for (int x = 0; x < coordinates.length; x++) {
+            for (int y = 0; y < coordinates[x].length; y++) {
+                if (getTotalManhattananDistance(x, y, coordinateList) < 10000) {
+                    coordinates[x][y] = 0;
+                } else {
+                    coordinates[x][y] = -1;
+                }
+            }
+        }
+
+        return (int) Arrays.stream(coordinates).flatMap(Arrays::stream).filter(integer -> integer == 0).count();
+    }
+
+    private static int getTotalManhattananDistance(int x, int y, List<Coordinate> coordinateList) {
+        int total = 0;
+
+        for (Coordinate coordinate : coordinateList) {
+            total += Math.abs(coordinate.getX() - x) + Math.abs(coordinate.getY() - y);
+        }
+
+        return total;
     }
 
     @Data
