@@ -106,23 +106,26 @@ public class Day6 {
 
     private static Integer getClosestManhattananDistanceId(int x, int y, List<Coordinate> coordinateList) {
 
-        Map<Coordinate, Integer> manhattanDistanceCoordinate = new HashMap<>();
+        int closestId = 0;
+        int closestDistance = Integer.MAX_VALUE;
+        boolean foundEqualClosest = false;
 
         for (Coordinate coordinate : coordinateList) {
-            manhattanDistanceCoordinate.put(coordinate,
-                    Math.abs(coordinate.getX() - x) + Math.abs(coordinate.getY() - y));
+            int distance = Math.abs(coordinate.getX() - x) + Math.abs(coordinate.getY() - y);
+            if (distance < closestDistance) {
+                closestId = coordinate.getOwnerId();
+                closestDistance = distance;
+                foundEqualClosest = false;
+            } else if (distance == closestDistance) {
+                foundEqualClosest = true;
+            }
         }
 
-        List<Coordinate> closestManhattananDistanceCoord = manhattanDistanceCoordinate.entrySet()
-                .stream()
-                .filter(entry -> entry.getValue().equals(manhattanDistanceCoordinate.entrySet()
-                        .stream().min(Map.Entry.comparingByValue())
-                        .get().getValue()))
-                .map(Map.Entry::getKey).collect(toList());
-
-        if (closestManhattananDistanceCoord.size() == 1) {
-            return closestManhattananDistanceCoord.get(0).getOwnerId();
-        } else return 0;
+        if (foundEqualClosest) {
+            return 0;
+        } else {
+            return closestId;
+        }
     }
 
     private static int get10000OrLessRegionSize(List<Coordinate> coordinateList) {
