@@ -32,7 +32,7 @@ public class Day5 {
     private static int getRemainingUnit(String input) {
 
         StringBuilder polymer = new StringBuilder(input);
-        boolean stringReacted = false;
+        boolean stringReacted;
 
         do {
             stringReacted = false;

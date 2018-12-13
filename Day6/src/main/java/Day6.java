@@ -183,5 +183,4 @@ public class Day6 {
         private int ownerId;
     }
 
-
 }
