@@ -3,4 +3,13 @@ plugins {
     id 'application'
 }
 
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
 mainClassName = 'Day4'
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'Day4'
+    }
+}

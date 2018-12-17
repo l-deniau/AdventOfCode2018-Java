@@ -3,20 +3,28 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.*;
 import java.util.*;
 
 public class Day7 {
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws FileNotFoundException {
 
-        Path inputPath = Paths.get(Objects.requireNonNull(Day7.class.getClassLoader()
-                .getResource("input.txt")).toURI());
+        String[] input;
+
+        if (args.length == 0) {
+            InputStream inputStream = Day7.class.getResourceAsStream("input_day7.txt");
+            input = new BufferedReader(new InputStreamReader(inputStream)).lines().toArray(String[]::new);
+        } else {
+            input = new BufferedReader(new FileReader(args[0])).lines().toArray(String[]::new);
+        }
+
+        long startTime = System.currentTimeMillis();
 
         Map<String, Set<String>> stepList = new HashMap<>();
-        Files.lines(inputPath).forEach(line -> {
+
+        // Creating the stepList from the input
+        Arrays.stream(input).forEach(line -> {
             String step = line.split(" ")[7];
             String requirements = line.split(" ")[1];
             if (stepList.containsKey(step)) {
@@ -41,16 +49,31 @@ public class Day7 {
                 "Part Two - Time spend to achieve all step with 5 workers :"
         );
         System.out.println(getTimedSteps(stepList));
+
+        System.out.println();
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("Finished in " + (float) (endTime - startTime) / 1000 + " s.");
+
+        System.out.println();
     }
 
     private static String getOrderedSteps(Map<String, Set<String>> stepList) {
+
         StringBuilder result = new StringBuilder();
         StringBuilder alphabet = new StringBuilder("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
         boolean stopFlag = false;
+
         while (!stopFlag) {
-            if (stepList.values().stream().flatMap(Collection::parallelStream).count() == 0) {
+
+            if (stepList
+                    .values()
+                    .stream()
+                    .flatMap(Collection::parallelStream)
+                    .count() == 0) {
                 stopFlag = true;
             }
+
             for (String letter : alphabet.toString().split("")) {
                 if (!stepList.containsKey(letter) || stepList.get(letter).size() == 0) {
                     result.append(letter);
@@ -59,7 +82,9 @@ public class Day7 {
                     break;
                 }
             }
+
         }
+
         return result.toString();
     }
 
@@ -94,8 +119,9 @@ public class Day7 {
             int activeStepDuration = this.activeStep.codePointAt(0) - 4;
             if (currentSecond - startSecond >= activeStepDuration) {
                 this.isIdle = true;
-            };
+            }
         }
+
         public void newWork(int currentSecond, String step) {
             this.activeStep = step;
             this.isIdle = false;

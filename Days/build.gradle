@@ -1,0 +1,31 @@
+
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '4.0.3'
+}
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+mainClassName = 'Days'
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'Days'
+    }
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    implementation project(':Day1')
+    implementation project(':Day2')
+    implementation project(':Day3')
+    implementation project(':Day4')
+    implementation project(':Day5')
+    implementation project(':Day6')
+    implementation project(':Day7')
+}

@@ -1,13 +1,19 @@
-plugins {
-    // Apply the java plugin to add support for Java
-    id 'java'
 
-    // Apply the application plugin to add support for building an application
+plugins {
+    id 'java'
     id 'application'
 }
 
-// Define the main class for the application
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
 mainClassName = 'Day6'
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'Day6'
+    }
+}
 
 repositories {
     jcenter()

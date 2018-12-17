@@ -1,8 +1,4 @@
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -16,14 +12,22 @@ public class Day4 {
 
     private static final Pattern linePattern = Pattern.compile("^\\[(.*)\\] (.*)$");
 
-    public static void main(String[] args) throws IOException, URISyntaxException {
+    public static void main(String[] args) throws FileNotFoundException {
 
-        Path inputPath = Paths.get(Objects.requireNonNull(Day4.class.getClassLoader()
-                .getResource("input.txt")).toURI());
+        String[] input;
 
-        List<String> sortedInput = Files.lines(inputPath)
+        if (args.length == 0) {
+            InputStream inputStream = Day4.class.getResourceAsStream("input_day4.txt");
+            input = new BufferedReader(new InputStreamReader(inputStream)).lines().toArray(String[]::new);
+        } else {
+            input = new BufferedReader(new FileReader(args[0])).lines().toArray(String[]::new);
+        }
+
+        long startTime = System.currentTimeMillis();
+
+        String[] sortedInput = Arrays.stream(input)
                 .sorted(Comparator.comparing(Day4::getDateInLine))
-                .collect(Collectors.toList());
+                .toArray(String[]::new);
 
         Map<Integer, Map<LocalDate, Set<Integer>>> recordsList = createRecordsList(sortedInput);
 
@@ -42,38 +46,38 @@ public class Day4 {
                 "Part Two - Id of the guard the most frequently asleep on the same minute multiplied by this minute :"
         );
         System.out.println(getStrategy2Result(recordsList));
+
+        System.out.println();
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("Finished in " + (float) (endTime - startTime) / 1000 + " s.");
+
+        System.out.println();
     }
 
     private static int getStrategy1Result(Map<Integer, Map<LocalDate, Set<Integer>>> recordsList) {
 
-        int maxAsleepGuardId = 0;
-        int maxMinuteAsleep = 0;
-
-        // The old school searching way
         // Searching the most asleep Guard
-        for (Map.Entry<Integer, Map<LocalDate, Set<Integer>>> record : recordsList.entrySet()) {
-            int minuteAsleep = 0;
-            for (Map.Entry<LocalDate, Set<Integer>> nightShift : record.getValue().entrySet()) {
-                minuteAsleep += nightShift.getValue().size();
-            }
-            if (minuteAsleep > maxMinuteAsleep) {
-                maxAsleepGuardId = record.getKey();
-                maxMinuteAsleep = minuteAsleep;
-            }
-        }
+        int maxAsleepGuardId = recordsList
+                .entrySet()
+                .stream()
+                .max(Comparator.comparing(entry -> entry.getValue().values().size()))
+                .get()
+                .getKey();
 
-        // Now having fun with stream....
         // Searching the most asleep minute
-        int mostAsleepMinute = recordsList.get(maxAsleepGuardId).values()
+        int mostAsleepMinute = recordsList.get(maxAsleepGuardId)
+                .values()
                 .stream()
                 .flatMap(Collection::stream)
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
                 .entrySet()
                 .stream()
                 .max(Comparator.comparing(Map.Entry::getValue))
-                .get().getKey();
+                .get()
+                .getKey();
 
-        return maxAsleepGuardId*mostAsleepMinute;
+        return maxAsleepGuardId * mostAsleepMinute;
     }
 
     private static int getStrategy2Result(Map<Integer, Map<LocalDate, Set<Integer>>> recordsList) {
@@ -82,10 +86,10 @@ public class Day4 {
         int minute = 0;
         int minuteCount = 0;
 
-        HashMap<Integer, Integer> minuteAsleepCountMap;
-
         for (Map.Entry<Integer, Map<LocalDate, Set<Integer>>> record : recordsList.entrySet()) {
-            minuteAsleepCountMap = new HashMap<>();
+
+            HashMap<Integer, Integer> minuteAsleepCountMap = new HashMap<>();
+
             // Creating the minuteAsleepCountMap
             for (Map.Entry<LocalDate, Set<Integer>> nightShift : record.getValue().entrySet()) {
                 for (Integer minuteAsleep : nightShift.getValue()) {
@@ -96,22 +100,23 @@ public class Day4 {
                     }
                 }
             }
-            // Condition to avoid the case where the guard never slept during his shift !!! Amazing :o
+
+            // Condition to avoid the case where the guard never slept during his shift !!! Amazing guard :o
             if (!minuteAsleepCountMap.isEmpty()) {
 
                 Integer maxSameMinuteCountAsleep =
                         minuteAsleepCountMap
-                            .values()
-                            .stream()
-                            .max(Integer::compareTo)
-                            .orElse(0);
+                                .values()
+                                .stream()
+                                .max(Integer::compareTo)
+                                .orElse(0);
 
                 Map<Integer, Integer> maxSameMinuteCountAsleepMap =
                         minuteAsleepCountMap
-                            .entrySet()
-                            .stream()
-                            .filter(entry -> entry.getValue().equals(maxSameMinuteCountAsleep))
-                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                                .entrySet()
+                                .stream()
+                                .filter(entry -> entry.getValue().equals(maxSameMinuteCountAsleep))
+                                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
                 if (maxSameMinuteCountAsleep > minuteCount) {
                     guardId = record.getKey();
@@ -122,12 +127,12 @@ public class Day4 {
             }
         }
 
-        return guardId*minute;
+        return guardId * minute;
     }
 
     private static LocalDateTime getDateInLine(String line) {
         LocalDateTime date = null;
-        Matcher lineMatch = linePattern.matcher(line);
+        Matcher lineMatch = Day4.linePattern.matcher(line);
         if (lineMatch.find()) {
             date = LocalDateTime.parse(lineMatch.group(1), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
         }
@@ -143,7 +148,7 @@ public class Day4 {
         return action;
     }
 
-    private static Map<Integer, Map<LocalDate, Set<Integer>>> createRecordsList(List<String> sortedInput) {
+    private static Map<Integer, Map<LocalDate, Set<Integer>>> createRecordsList(String[] sortedInput) {
 
         Map<Integer, Map<LocalDate, Set<Integer>>> recordsList = new HashMap<>();
 
@@ -159,7 +164,7 @@ public class Day4 {
 
             // If the shift of a new Guard begin before midnight
             if (date.getHour() != 0 && action.startsWith("Guard")) {
-                date = date.with(LocalDate.from(date.plusDays(1)).atTime(0,0));
+                date = date.with(LocalDate.from(date.plusDays(1)).atTime(0, 0));
             }
 
             // Add minutes to last guard shift record if he was asleep
