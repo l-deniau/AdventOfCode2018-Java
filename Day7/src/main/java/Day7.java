@@ -1,10 +1,10 @@
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Day7 {
 
@@ -20,6 +20,31 @@ public class Day7 {
         }
 
         long startTime = System.currentTimeMillis();
+        System.out.println("--- Day 7: The Sum of Its Parts ---");
+
+        System.out.println();
+
+        System.out.println(
+                "Part One - Ordered steps :"
+        );
+        System.out.println(getOrderedSteps(input));
+
+        System.out.println();
+
+        System.out.println(
+                "Part Two - Time spend to achieve all step with 5 workers :"
+        );
+        System.out.println(getTimedSteps(input));
+
+        System.out.println();
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("Finished in " + (float) (endTime - startTime) / 1000 + " s.");
+
+        System.out.println();
+    }
+
+    private static String getOrderedSteps(String[] input) {
 
         Map<String, Set<String>> stepList = new HashMap<>();
 
@@ -33,32 +58,6 @@ public class Day7 {
                 stepList.put(step, new HashSet<>(Collections.singletonList(requirements)));
             }
         });
-
-        System.out.println("--- Day 7: The Sum of Its Parts ---");
-
-        System.out.println();
-
-        System.out.println(
-                "Part One - Ordered steps :"
-        );
-        System.out.println(getOrderedSteps(stepList));
-
-        System.out.println();
-
-        System.out.println(
-                "Part Two - Time spend to achieve all step with 5 workers :"
-        );
-        System.out.println(getTimedSteps(stepList));
-
-        System.out.println();
-
-        long endTime = System.currentTimeMillis();
-        System.out.println("Finished in " + (float) (endTime - startTime) / 1000 + " s.");
-
-        System.out.println();
-    }
-
-    private static String getOrderedSteps(Map<String, Set<String>> stepList) {
 
         StringBuilder result = new StringBuilder();
         StringBuilder alphabet = new StringBuilder("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
@@ -88,43 +87,96 @@ public class Day7 {
         return result.toString();
     }
 
-    private static int getTimedSteps(Map<String, Set<String>> stepList) {
-        int second = 0;
+    private static int getTimedSteps(String[] input) {
 
-        List<Worker> workerlist = new ArrayList<>(Arrays.asList(
-                new Worker(1, "", true, 0),
-                new Worker(2, "", true, 0),
-                new Worker(3, "", true, 0),
-                new Worker(4, "", true, 0),
-                new Worker(5, "", true, 0)
+        Map<String, Set<String>> stepList = new HashMap<>();
+
+        // Creating the stepList from the input
+        Arrays.stream(input).forEach(line -> {
+            String step = line.split(" ")[7];
+            String requirements = line.split(" ")[1];
+            if (stepList.containsKey(step)) {
+                stepList.get(step).add(requirements);
+            } else {
+                stepList.put(step, new HashSet<>(Collections.singletonList(requirements)));
+            }
+        });
+
+        // Creating the list of worker
+        List<Worker> workerList = new ArrayList<>(Arrays.asList(
+                new Worker(1, "", 0),
+                new Worker(2, "", 0),
+                new Worker(3, "", 0),
+                new Worker(4, "", 0),
+                new Worker(5, "", 0)
         ));
 
-        return second;
+        AtomicInteger second = new AtomicInteger(0);
+        StringBuilder alphabet = new StringBuilder("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+        Queue<String> stepsAvailable = new LinkedList<>();
+
+        do {
+
+            // End work
+            workerList.stream()
+                    .filter(worker -> worker.haveFinishedWork(second.intValue()))
+                    .forEach(worker -> {
+                        stepList.forEach((key, value) -> value.remove(worker.getActiveStep()));
+                        worker.endWork();
+                    });
+
+            // Get next available Steps
+            if (stepsAvailable.isEmpty() && alphabet.length() > 0) {
+                for (String letter : alphabet.toString().split("")) {
+                    if (!stepList.containsKey(letter) || stepList.get(letter).size() == 0) {
+                        alphabet.deleteCharAt(alphabet.indexOf(letter));
+                        stepsAvailable.add(letter);
+                    }
+                }
+            }
+
+            // Begin work
+            workerList.stream()
+                    .filter(Worker::isAvailable)
+                    .forEach(worker ->
+                            worker.newWork(second.intValue(), stepsAvailable.isEmpty() ? "" : stepsAvailable.remove())
+                    );
+
+            second.incrementAndGet();
+
+        } while (workerList.stream().filter(Worker::isAvailable).count() != 5
+                || alphabet.length() > 0);
+
+        return second.intValue() - 1;
     }
 
-    @NoArgsConstructor
     @AllArgsConstructor
     @Setter
     @Getter
     private static class Worker {
         private int ID;
         private String activeStep;
-        private boolean isIdle;
         private int startSecond;
 
-        public void work(int currentSecond) {
-            // Determine duration of a step helped by unicode number
-            // example : A unicode equal 65 and A take 61 seconds.
-            // So we just need to subtract 4 to the unicode number
-            int activeStepDuration = this.activeStep.codePointAt(0) - 4;
-            if (currentSecond - startSecond >= activeStepDuration) {
-                this.isIdle = true;
+        boolean isAvailable() {
+            return activeStep.isEmpty();
+        }
+
+        void newWork(int currentSecond, String step) {
+            this.activeStep = step;
+            this.startSecond = currentSecond;
+        }
+
+        boolean haveFinishedWork(int currentSecond) {
+            if (this.activeStep.isEmpty()) {
+                return false;
+            } else {
+                return currentSecond - startSecond >= this.activeStep.codePointAt(0) - 4;
             }
         }
 
-        public void newWork(int currentSecond, String step) {
-            this.activeStep = step;
-            this.isIdle = false;
+        void endWork() {
+            this.activeStep = "";
         }
     }
 }
