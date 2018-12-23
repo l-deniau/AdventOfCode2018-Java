@@ -1,4 +1,6 @@
 import java.io.*;
+import java.util.Arrays;
+import java.util.OptionalInt;
 
 public class Day5 {
     public static void main(String[] args) throws FileNotFoundException {
@@ -72,19 +74,12 @@ public class Day5 {
 
     private static int getShortestPolymer(String input) {
 
-        int shortestPolymer = input.length();
+        OptionalInt result = Arrays.stream("abcdefghijklmnopqrstuvwxyz".split(""))
+                .parallel()
+                .mapToInt(letter ->
+                        getRemainingUnit(input.replaceAll(letter.toLowerCase() + "|" + letter.toUpperCase(), ""))
+                ).min();
 
-        for (String letter : "abcdefghijklmnopqrstuvwxyz".split("")) {
-
-            String newInput = input.replaceAll(letter.toLowerCase() + "|" + letter.toUpperCase(), "");
-            int remainingUnit = getRemainingUnit(newInput);
-
-            if (remainingUnit < shortestPolymer) {
-                shortestPolymer = remainingUnit;
-            }
-
-        }
-
-        return shortestPolymer;
+        return result.isPresent() ? result.getAsInt() : input.length();
     }
 }
