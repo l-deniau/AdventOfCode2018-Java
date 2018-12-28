@@ -1,0 +1,25 @@
+
+plugins {
+    id 'java'
+    id 'application'
+}
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+mainClassName = 'Day9'
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'Day9'
+    }
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    implementation 'org.projectlombok:lombok:1.18.4'
+    annotationProcessor 'org.projectlombok:lombok:1.18.4'
+}
