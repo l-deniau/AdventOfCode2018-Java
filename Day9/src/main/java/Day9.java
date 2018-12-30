@@ -1,8 +1,5 @@
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,9 +39,9 @@ public class Day9 {
         System.out.println();
 
         System.out.println(
-                "Part Two -  :"
+                "Part Two - The highest score if the number of the last marble is 100 times larger :"
         );
-        System.out.println();
+        System.out.println(getHighestScoreOptimized(playerNumber, marbleNumber * 100));
 
         System.out.println();
 
@@ -56,11 +53,11 @@ public class Day9 {
 
     private static int getHighestScore(int playerNumber, int marbleNumber) {
 
-        int[] playerScore = new int[playerNumber + 1];
+        int[] playerScore = new int[playerNumber];
         List<Integer> marbleCircle = new ArrayList<>();
         marbleCircle.add(0);
         int currentMarblePosition = 0;
-        int currentPlayer = 1;
+        int currentPlayer = 0;
 
         for (int turn = 1; turn <= marbleNumber; turn++) {
 
@@ -83,7 +80,54 @@ public class Day9 {
             }
 
             currentMarblePosition = newMarblePosition;
-            currentPlayer = currentPlayer + 1 > playerNumber ? 1 : currentPlayer + 1;
+            currentPlayer = currentPlayer + 1 > playerScore.length - 1 ? 0 : currentPlayer + 1;
+        }
+
+        return Arrays.stream(playerScore).max().orElse(0);
+    }
+
+    private static long getHighestScoreOptimized(int playerNumber, int marbleNumber) {
+
+        long[] playerScore = new long[playerNumber];
+        List<Integer> marbleCircle = new LinkedList<>();
+        marbleCircle.add(0);
+        ListIterator<Integer> marbleCircleIterator = marbleCircle.listIterator();
+        marbleCircleIterator.next();
+        int currentPlayer = 0;
+
+        for (int turn = 1; turn <= marbleNumber; turn++) {
+
+            if (turn % 23 == 0) {
+
+                int marbleValueToRemove = 0;
+
+                for (int i = 0; i < 8; i++) {
+                    if (marbleCircleIterator.hasPrevious()) {
+                        marbleValueToRemove = marbleCircleIterator.previous();
+                    } else {
+                        marbleCircleIterator = marbleCircle.listIterator(marbleCircle.size());
+                        marbleValueToRemove = marbleCircleIterator.previous();
+                    }
+                }
+
+                playerScore[currentPlayer] = playerScore[currentPlayer] + turn + marbleValueToRemove;
+                marbleCircleIterator.remove();
+                marbleCircleIterator.next();
+
+            } else {
+
+                if (marbleCircleIterator.hasNext()) {
+                    marbleCircleIterator.next();
+                } else {
+                    marbleCircleIterator = marbleCircle.listIterator();
+                    marbleCircleIterator.next();
+                }
+
+                marbleCircleIterator.add(turn);
+
+            }
+
+            currentPlayer = currentPlayer + 1 > playerScore.length - 1 ? 0 : currentPlayer + 1;
         }
 
         return Arrays.stream(playerScore).max().orElse(0);
