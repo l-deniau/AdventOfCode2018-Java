@@ -18,6 +18,7 @@ public class Days {
         Day10.main(args.length > 9 && args[9] != null ? new String[]{args[9]} : new String[]{});
         Day11.main(args.length > 10 && args[10] != null ? new String[]{args[10]} : new String[]{});
         Day12.main(args.length > 11 && args[11] != null ? new String[]{args[11]} : new String[]{});
+        Day13.main(args.length > 12 && args[12] != null ? new String[]{args[12]} : new String[]{});
 
         long endTime = System.currentTimeMillis();
 
