@@ -1,0 +1,16 @@
+
+plugins {
+    id 'java'
+    id 'application'
+}
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+mainClassName = 'Day14'
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'Day14'
+    }
+}
